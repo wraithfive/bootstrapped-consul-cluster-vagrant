@@ -1,0 +1,9 @@
+{
+    "server": false,
+    "data_dir": "var/consul",
+    "enable_syslog": true,
+    "ui_dir": "/vagrant/web/",
+    "log_level": "INFO",
+    "enable_syslog": true,
+    "start_join": ["172.20.20.10", "172.20.20.11"]
+}

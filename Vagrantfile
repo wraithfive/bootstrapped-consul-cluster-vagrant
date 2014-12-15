@@ -11,12 +11,20 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define "consul1" do |consul1|
       $script = <<SCRIPT
 
-apt-get install daemon
+
 
 #==================================================
-echo "Installing Consul"
-cp /vagrant/bin/consul /usr/local/bin/
-daemon -X "consul agent -server -bootstrap -data-dir /tmp/consul -node=consul1 -bind 172.20.20.10"
+echo "Fetching Consul..."
+cd /tmp/
+wget https://dl.bintray.com/mitchellh/consul/0.4.1_linux_amd64.zip -O consul.zip
+
+echo "Installing Consul..."
+unzip consul.zip
+sudo chmod +x consul
+sudo mv consul /usr/bin/consul
+sudo cp /vagrant/config/serverconfig.json /etc/consul.d/config.json
+
+daemon -X "consul agent -config-dir /etc/consul.d/ -node=consul1 -bind 172.20.20.10"
 
 SCRIPT
       consul1.vm.provision "shell", inline: $script
@@ -27,12 +35,20 @@ SCRIPT
   config.vm.define "consul2" do |consul2|
       $script = <<SCRIPT
 
-apt-get install daemon
+
 
 #==================================================
-echo "Installing Consul"
-cp /vagrant/bin/consul /usr/local/bin/
-daemon -X "consul agent -server -data-dir /tmp/consul -node=consul2 -bind 172.20.20.11 -join 172.20.20.10" 
+echo "Fetching Consul..."
+cd /tmp/
+wget https://dl.bintray.com/mitchellh/consul/0.4.1_linux_amd64.zip -O consul.zip
+
+echo "Installing Consul..."
+unzip consul.zip
+sudo chmod +x consul
+sudo mv consul /usr/bin/consul
+sudo cp /vagrant/config/serverconfig.json /etc/consul.d/config.json
+
+daemon -X "consul agent -config-dir /etc/consul.d/ -node=consul2 -bind 172.20.20.11"
 
 SCRIPT
       consul2.vm.provision "shell", inline: $script
@@ -43,12 +59,20 @@ SCRIPT
   config.vm.define "status" do |status|
       $script = <<SCRIPT
 
-apt-get install daemon
+
 
 #==================================================
+echo "Fetching Consul..."
+cd /tmp/
+wget https://dl.bintray.com/mitchellh/consul/0.4.1_linux_amd64.zip -O consul.zip
+
 echo "Installing and Configuring Consul Status UI"
-cp /vagrant/bin/consul /usr/local/bin/
-daemon -X "consul agent -client=172.20.20.12 -ui-dir /vagrant/web/ -data-dir /tmp/consul -node=status -bind 172.20.20.12 -join 172.20.20.10"
+unzip consul.zip
+sudo chmod +x consul
+sudo mv consul /usr/bin/consul
+sudo cp /vagrant/config/clientconfig.json /etc/consul.d/config.json
+
+daemon -X "consul agent -config-dir /etc/consul.d -client=172.20.20.12 -node=status -bind 172.20.20.12"
 
 SCRIPT
 
@@ -60,14 +84,20 @@ SCRIPT
   config.vm.define "svc1" do |svc1|
       $script = <<SCRIPT
 
-apt-get install daemon
+
 
 #==================================================
-echo "Installing and Configuring Consul"
-cp /vagrant/bin/consul /usr/local/bin/
-mkdir /etc/consul.d/
+echo "Fetching Consul..."
+cd /tmp/
+wget https://dl.bintray.com/mitchellh/consul/0.4.1_linux_amd64.zip -O consul.zip
+
+echo "Installing and Configuring Consul Status UI"
+unzip consul.zip
+sudo chmod +x consul
+sudo mv consul /usr/bin/consul
+sudo cp /vagrant/config/clientconfig.json /etc/consul.d/config.json
 cp /vagrant/config/svc1.mysvc.json /etc/consul.d/mysvc.json
-daemon -X "consul agent -data-dir /tmp/consul -node=service1 -config-dir /etc/consul.d -bind 172.20.20.13 -join 172.20.20.10"
+daemon -X "consul agent -node=service1 -config-dir /etc/consul.d -bind 172.20.20.13"
 
 #==================================================
 echo "Installing and Configuring Confd"
@@ -88,14 +118,20 @@ SCRIPT
 
   config.vm.define "svc2" do |svc2|
       $script = <<SCRIPT
-apt-get install daemon
+
 
 #==================================================
-echo "Installing and Configuring Consul"
-cp /vagrant/bin/consul /usr/local/bin/
-mkdir /etc/consul.d/
+echo "Fetching Consul..."
+cd /tmp/
+wget https://dl.bintray.com/mitchellh/consul/0.4.1_linux_amd64.zip -O consul.zip
+
+echo "Installing and Configuring Consul..."
+unzip consul.zip
+sudo chmod +x consul
+sudo mv consul /usr/bin/consul
+sudo cp /vagrant/config/clientconfig.json /etc/consul.d/config.json
 cp /vagrant/config/svc2.mysvc.json /etc/consul.d/mysvc.json
-daemon -X "consul agent -data-dir /tmp/consul -node=service2 -config-dir /etc/consul.d -bind 172.20.20.14 -join 172.20.20.10"
+daemon -X "consul agent -node=service2 -config-dir /etc/consul.d -bind 172.20.20.14"
 
 #==================================================
 echo "Installing and Configuring Confd"
@@ -116,14 +152,20 @@ SCRIPT
 
   config.vm.define "demo" do |demo|
       $script = <<SCRIPT
-apt-get install daemon
+
 
 #==================================================
-echo "Installing and Configuring Consul"
-cp /vagrant/bin/consul /usr/local/bin/
-mkdir /etc/consul.d/
+echo "Fetching Consul..."
+cd /tmp/
+wget https://dl.bintray.com/mitchellh/consul/0.4.1_linux_amd64.zip -O consul.zip
+
+echo "Installing and Configuring Consul..."
+unzip consul.zip
+sudo chmod +x consul
+sudo mv consul /usr/bin/consul
+sudo cp /vagrant/config/clientconfig.json /etc/consul.d/config.json
 cp /vagrant/config/demo.demo.json /etc/consul.d/demo.json
-daemon -X "consul agent -data-dir /tmp/consul -node=demo -config-dir /etc/consul.d -bind 172.20.20.15 -join 172.20.20.10"
+daemon -X "consul agent -node=demo -config-dir /etc/consul.d -bind 172.20.20.15"
 
 #==================================================
 echo "Installing and Configuring Demo App"
@@ -137,7 +179,7 @@ SCRIPT
   end
 
 
-
+  config.vm.provision "bootstrap", type: "shell", path: "bootstrap.sh"
   config.vm.provider :virtualbox do |vb|
     vb.customize ["modifyvm", :id, "--memory", "256"]
   end
